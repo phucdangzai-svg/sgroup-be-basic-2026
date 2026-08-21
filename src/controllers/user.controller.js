@@ -1,18 +1,41 @@
-import { getUsers } from "../services/user.service.js";
+import * as userService from '../services/user.service.js';
 
-export const getAllUsers = async (req, res) => {
-    try {
-        const { active } = req.body;
+export const getUsers = async (req, res, next) => {
+  try {
+    const { active } = req.query;
+    const users = await userService.getUsers({ active });
+    return res.status(200).json({
+      success: true,
+      data: users,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 
-        const results = await getUsers({ active });
-        return res.json({
-            status: 200,
-            message: "Success",
-            data: results.data
-        })
-    } catch (error) {
-        res.status(500).json({
-            message: error.message
-        })
-    }
-}
+export const getUserById = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const user = await userService.getUserById(id);
+    return res.status(200).json({
+      success: true,
+      data: user,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const createUser = async (req, res, next) => {
+  try {
+    const { fullName, email, role, password } = req.body;
+    const newUser = await userService.createUser({ fullName, email, role, password });
+    return res.status(201).json({
+      success: true,
+      message: 'Tạo tài khoản thành công',
+      data: newUser,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
