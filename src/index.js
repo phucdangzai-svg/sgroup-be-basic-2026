@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import rootRouter from './routes/index.js';
 import morgan from 'morgan';
 import { errorHandler, notFoundHandler } from './middlewares/error.middleware.js';
+import { connectionDb } from './configs/db.config.js';
 
 dotenv.config();
 
@@ -33,6 +34,7 @@ app.use(notFoundHandler);
 app.use(errorHandler);
 
 // Khởi động server
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
+  await connectionDb();
   console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
