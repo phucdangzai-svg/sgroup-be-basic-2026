@@ -1,15 +1,30 @@
-export const requireAuth = (req, res, next) => {
-    const tokenHeaders = req.headers["token-auth"];
+import { verifyAccessToken } from "../utils/jwt.js";
+import { isTokenRevoked } from "../repositories/token.repository.js";
 
-    // Nếu không truyền hoặc truyền sai token -> Chặn 
-    if (!tokenHeaders || tokenHeaders !== "secrets123") {
-        return res.status(401).json({
-            sucess: false,
-            message: "Truy cập bị từ chối: Token không hợp lệ hoặc bị thiếu"
-        });
+export const authMiddleware = (req, res, next) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+      const error = new Error("Access Token is required");
+      error.statusCode = 401;
+      throw error;
     }
+    const [type, token] = authHeader.split(" ");
 
-    // Nếu hợp lệ -> Pass
-    console.log("Token hợp lệ, cho phép đi tiếp.");
-    next();    
-}
+    if (type !== "Bearer" || !token) {
+      const error = new Error("Invalid Authorization header");
+      error.statusCode = 401;
+      throw error;
+    }
+    if (isTokenRevoked(token)) {
+      const error = new Error("Token has been revoked");
+      error.statusCode = 401;
+      throw error;
+    }
+    const payload = verifyAccessToken(token);
+    req.user = payload;
+    next();
+  } catch (err) {
+    next(err);
+  }
+};
