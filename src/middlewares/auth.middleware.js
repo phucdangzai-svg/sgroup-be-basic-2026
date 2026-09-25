@@ -28,3 +28,13 @@ export const authMiddleware = (req, res, next) => {
     next(err);
   }
 };
+// phan quyen
+export const authorizeAdmin = (req, res, next) => {
+  if (req.user.role !== "admin") {
+    const error = new Error("Bạn không có quyền truy cập");
+    error.statusCode = 403;
+    throw error;
+  }
+
+  next();
+};
